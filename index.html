@@ -8,25 +8,25 @@
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:Roboto,"Segoe UI",system-ui,-apple-system,sans-serif;overflow:hidden}
 #app{height:100%;display:grid;grid-template-rows:auto 1fr auto auto auto;gap:1.3vw;padding:2.2vw 4.5vw 0}
+.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}.top .dt{white-space:nowrap;text-align:right;font-size:2.1vw;color:var(--mut)}
 .hello{display:flex;justify-content:center;align-items:center;gap:1vw;font-size:3.2vw;font-weight:500;letter-spacing:.01em}
-.hello .em{font-size:3.4vw;line-height:1}
-.main{display:grid;grid-template-columns:1fr .8fr 1.55fr;gap:1.5vw;min-height:0}
+.hello #c{font-variant-numeric:tabular-nums}.hello .em{font-size:3.4vw;line-height:1}
+.main{display:grid;grid-template-columns:.7fr 1.6fr;gap:1.5vw;min-height:0}
 .tile{background:var(--s1);border-radius:1.2vw;padding:1.8vw;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:0;overflow:hidden}
 .welcome h1{margin:0;font-size:2.7vw;font-weight:500;line-height:1.2}
 .welcome .clk{font-size:5vw;font-weight:300;margin-top:.6vw;font-variant-numeric:tabular-nums;line-height:1.1}
 .welcome .dt{font-size:2vw;color:var(--mut);margin-top:.5vw}
-.today .ic{font-size:5.4vw;line-height:1.1}
-.today .t{font-size:5vw;font-weight:300;line-height:1.1}
-.today .l{font-size:2vw;color:var(--mut);margin-top:.4vw}
+.today .ic{font-size:3.4vw;line-height:1.1}
+.today .t{font-size:3.4vw;font-weight:300;line-height:1.1}
+.today .l{font-size:1.9vw;color:var(--mut);margin-top:.4vw}
 .verse{align-items:flex-start;text-align:left}
 .verse .lab{font-size:1.5vw;color:var(--acc);letter-spacing:.08em;text-transform:uppercase;font-weight:500;margin-bottom:.9vw}
-.verse .tx{font-size:2vw;line-height:1.42;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:8;overflow:hidden}
+.verse .tx{font-size:2.3vw;line-height:1.42;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:9;overflow:hidden}
 .verse .ref{font-size:1.9vw;color:var(--mut);margin-top:.9vw}
-.apps{display:grid;grid-template-columns:1fr 1fr;gap:1.5vw}
-.app{display:flex;align-items:center;justify-content:center;gap:1.4vw;height:7.6vw;background:var(--s2);border:0;border-radius:1.2vw;color:var(--fg);font:inherit;font-size:2.6vw;font-weight:500;cursor:pointer;overflow:hidden;padding:0;transition:transform .12s}
-.app img{height:100%;width:auto;max-width:100%;object-fit:contain;display:block}
-.app img.ic{height:70%;border-radius:1vw}
-.app:focus{outline:.35vw solid var(--fg);outline-offset:.35vw;transform:scale(1.03);background:#2C3644}
+.apps{display:flex;justify-content:center;gap:5vw}
+.app{width:10vw;height:10vw;background:transparent;border:0;border-radius:1.6vw;color:var(--fg);font:inherit;font-size:2vw;cursor:pointer;overflow:hidden;padding:0;transition:transform .12s;display:flex;align-items:center;justify-content:center;background:var(--s2)}
+.app img{width:100%;height:100%;object-fit:contain;display:block}
+.app:focus{outline:.35vw solid var(--fg);outline-offset:.35vw;transform:scale(1.06)}
 .days{display:grid;grid-template-columns:repeat(7,1fr);gap:1vw}
 .d{background:var(--s1);border-radius:1vw;padding:.9vw .4vw;text-align:center}
 .d.now{background:var(--s2);box-shadow:inset 0 -.25vw 0 var(--acc)}
@@ -42,9 +42,8 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 @media (prefers-reduced-motion:reduce){.track{animation:none;padding-left:4.5vw}}
 </style></head><body>
 <div id="app">
-  <div class="hello"><span class="em" id="em"></span><span id="gr"></span></div>
+  <div class="top"><div></div><div class="hello"><span id="c"></span><span class="em" id="em"></span><span id="gr"></span></div><div class="dt" id="dt"></div></div>
   <div class="main">
-    <div class="tile welcome"><h1>Welcome home,<br>Master Keely</h1><div class="clk" id="c"></div><div class="dt" id="dt"></div></div>
     <div class="tile today"><div class="ic" id="ti">…</div><div class="t" id="tt"></div><div class="l" id="tl"></div></div>
     <div class="tile verse"><div class="lab">Verse of the day · NASB</div><div class="tx" id="vt">…</div><div class="ref" id="vr"></div></div>
   </div>
@@ -76,10 +75,10 @@ const unesc=s=>{const t=document.createElement('textarea');t.innerHTML=s;return 
 // ---- clock + greeting (always in the home time zone) ----
 function tick(){const n=new Date();
  const h=+new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',hour12:false}).format(n)%24;
- const m=h>=5&&h<12?['🌅','Good morning']:h>=12&&h<17?['☀️','Good afternoon']:['🌙','Good evening'];
+ const m=h>=5&&h<12?['🌅','Good morning, Master Keely']:h>=12&&h<17?['☀️','Good afternoon, Master Keely']:['🌙','Good evening, Master Keely'];
  $('em').textContent=m[0];$('gr').textContent=m[1];
  $('c').textContent=n.toLocaleTimeString('en-US',{timeZone:TZ,hour:'numeric',minute:'2-digit'});
- $('dt').textContent=n.toLocaleDateString('en-US',{timeZone:TZ,weekday:'long',month:'long',day:'numeric'})}
+ $('dt').textContent=n.toLocaleDateString('en-US',{timeZone:TZ,weekday:'short',month:'short',day:'numeric'})}
 tick();setInterval(tick,5000);
 
 // ---- weather (Open-Meteo, fixed location) ----
@@ -92,7 +91,7 @@ function drawWx(j){const c=WX(j.current.weather_code),d=j.daily;
  $('days').innerHTML=d.time.map((t,i)=>`<div class="d${i?'':' now'}"><b>${i?new Date(t+'T12:00:00Z').toLocaleDateString('en-US',{timeZone:'UTC',weekday:'short'}):'Today'}</b><i>${WX(d.weather_code[i])[0]}</i><span>${Math.round(d.temperature_2m_max[i])}° <em>${Math.round(d.temperature_2m_min[i])}°</em></span></div>`).join('')}
 
 // ---- verse of the day (BibleGateway, NASB) ----
-function showVerse(t,r){if(!t)return;$('vt').textContent=t;$('vr').textContent=r||'';$('vt').style.fontSize=t.length>260?'1.75vw':t.length>180?'1.9vw':'2.05vw'}
+function showVerse(t,r){if(!t)return;$('vt').textContent=t;$('vr').textContent=r||'';$('vt').style.fontSize=t.length>260?'2vw':t.length>180?'2.15vw':'2.3vw'}
 async function verse(){
  const day=new Date().toLocaleDateString('en-CA',{timeZone:TZ}),c=ls.g('verse');
  if(c&&c.day===day){showVerse(c.t,c.r);return}
@@ -126,12 +125,12 @@ async function ammo(){
   if(row){ago=row.ago;if(!v){v=row.cur;src='att'}}
   if(!v)continue;
   const h=hist[a.k];
-  if(!h||h.src!==src)hist[a.k]={src,cur:v,prev:null,ago,t:Date.now()};
-  else{if(Math.abs(h.cur-v)>=0.005){h.prev=h.cur;h.cur=v}h.ago=ago;h.t=Date.now()}}
+  if(!h||h.src!==src)hist[a.k]={src,cur:v,prev:null,ago:src==='att'?ago:null,t:Date.now()};
+  else{if(Math.abs(h.cur-v)>=0.005){h.prev=h.cur;h.cur=v}h.ago=src==='att'?ago:null;h.t=Date.now()}}
  ls.s('ammo',hist);drawAmmo(hist)}
 function drawAmmo(hist){
  const items=AMMO.map(a=>{const h=hist[a.k];if(!h)return `<span><span class="nm">${a.name}</span><span class="na">— —</span></span>`;
-  const ref=h.prev!=null?h.prev:h.ago;let ar='',cl='na',pc='';
+  const ref=h.prev!=null?h.prev:(h.src==='att'?h.ago:null);let ar='',cl='na',pc='';
   if(ref){const d=h.cur-ref;if(Math.abs(d)>=0.005){ar=d>0?'▲':'▼';cl=d>0?'up':'dn';pc=' '+(d>0?'+':'')+(d/ref*100).toFixed(1)+'%'}else{ar='▬'}}
   return `<span><span class="nm">${a.name}</span><span class="${cl}">$${h.cur.toFixed(2)}/rd ${ar}${pc}</span></span>`}).join('');
  $('tr').innerHTML=items+items}
@@ -139,8 +138,8 @@ function drawAmmo(hist){
 
 // ---- real app artwork from this device ----
 function art(btn,name){try{if(!window.Android||!Android.icon)return;const r=Android.icon(name);if(!r)return;
- const ban=r.startsWith('B:'),img=new Image();img.src='data:image/png;base64,'+r.slice(2);if(!ban)img.className='ic';
- img.onload=()=>{btn.innerHTML='';btn.appendChild(img);if(!ban){const s=document.createElement('span');s.textContent=btn.dataset.app==='youtube'?'YouTube':'BlueVod';btn.appendChild(s)}}}catch(e){}}
+ const ban=r.startsWith('B:'),img=new Image();img.src='data:image/png;base64,'+r.slice(2);
+ img.onload=()=>{btn.innerHTML='';btn.style.background=ban?'#fff':'transparent';img.style.objectFit=ban?'contain':'cover';btn.appendChild(img)}}catch(e){}}
 art($('yt'),'youtube');art($('bv'),'bluevod');
 
 // ---- controller / remote focus ----
