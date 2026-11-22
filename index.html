@@ -21,10 +21,10 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 .today .l{font-size:1.9vw;color:var(--mut);margin-top:.4vw}
 .verse{align-items:flex-start;text-align:left}
 .verse .lab{font-size:1.5vw;color:var(--acc);letter-spacing:.08em;text-transform:uppercase;font-weight:500;margin-bottom:.6vw}
-.verse .tx{font-size:2.2vw;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:12;overflow:hidden}
+.verse{justify-content:flex-start}.verse .tx{font-size:2.2vw;line-height:1.35;flex:1 1 0;min-height:0;width:100%;overflow:hidden}
 .verse .ref{font-size:1.8vw;color:var(--mut);margin-top:.6vw}
 .apps{display:flex;justify-content:center;gap:5vw}
-.app{width:8.6vw;height:8.6vw;background:transparent;border:0;border-radius:1.6vw;color:var(--fg);font:inherit;font-size:2vw;cursor:pointer;overflow:hidden;padding:0;transition:transform .12s;display:flex;align-items:center;justify-content:center;background:var(--s2)}
+.app{width:10vw;height:10vw;background:transparent;border:0;border-radius:1.6vw;color:var(--fg);font:inherit;font-size:2vw;cursor:pointer;overflow:hidden;padding:0;transition:transform .12s;display:flex;align-items:center;justify-content:center;background:var(--s2)}
 .app img{width:100%;height:100%;object-fit:contain;display:block}
 .app:focus{outline:.35vw solid var(--fg);outline-offset:.35vw;transform:scale(1.06)}
 .days{display:grid;grid-template-columns:repeat(7,1fr);gap:1vw}
@@ -35,7 +35,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 .d span{font-size:2vw;font-weight:500}.d span em{font-style:normal;font-weight:400;color:var(--mut)}
 .tick{margin:0 -4.5vw;background:var(--s1);height:4.6vw;overflow:hidden;display:flex;align-items:center;white-space:nowrap}
 .track{display:inline-block;padding-left:100%;animation:sc 45s linear infinite}
-.track span{display:inline-block;font-size:2.1vw;margin-right:5vw}
+.track>span{display:inline-block;font-size:2.1vw;margin-right:5vw}.track span{font-size:2.1vw}
 .track .nm{color:var(--mut);margin-right:.7vw;font-weight:500}
 .track .up{color:var(--up)}.track .dn{color:var(--dn)}.track .na{color:var(--mut)}
 @keyframes sc{from{transform:translateX(0)}to{transform:translateX(-100%)}}
@@ -91,7 +91,9 @@ function drawWx(j){const c=WX(j.current.weather_code),d=j.daily;
  $('days').innerHTML=d.time.map((t,i)=>`<div class="d${i?'':' now'}"><b>${i?new Date(t+'T12:00:00Z').toLocaleDateString('en-US',{timeZone:'UTC',weekday:'short'}):'Today'}</b><i>${WX(d.weather_code[i])[0]}</i><span>${Math.round(d.temperature_2m_max[i])}° <em>${Math.round(d.temperature_2m_min[i])}°</em></span></div>`).join('')}
 
 // ---- verse of the day (BibleGateway, NASB) ----
-function showVerse(t,r){if(!t)return;$('vt').textContent=t;$('vr').textContent=r||'';$('vt').style.fontSize=t.length>230?'1.8vw':t.length>150?'2vw':'2.2vw'}
+function fitVerse(){const tx=$('vt');let f=2.3;tx.style.fontSize=f+'vw';while(f>1.2&&tx.scrollHeight>tx.clientHeight+1){f-=.05;tx.style.fontSize=f+'vw'}}
+function showVerse(t,r){if(!t)return;$('vt').textContent=t;$('vr').textContent=r||'';fitVerse();setTimeout(fitVerse,300)}
+addEventListener('resize',fitVerse);
 async function verse(){
  const day=new Date().toLocaleDateString('en-CA',{timeZone:TZ}),c=ls.g('verse');
  if(c&&c.day===day){showVerse(c.t,c.r);return}
@@ -137,18 +139,16 @@ function drawAmmo(hist){
 {const h=ls.g('ammo');if(h)drawAmmo(h);else drawAmmo({})}
 
 // ---- real app artwork from this device ----
+function trimmed(img,cb){try{const W=img.naturalWidth,H=img.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(img,0,0);
+ const d=x.getImageData(0,0,W,H).data;let x0=W,x1=-1,y0=H,y1=-1;
+ for(let y=0;y<H;y++)for(let q=0;q<W;q++){const i=(y*W+q)*4;if(d[i+3]>24&&!(d[i]>235&&d[i+1]>235&&d[i+2]>235)){if(q<x0)x0=q;if(q>x1)x1=q;if(y<y0)y0=y;if(y>y1)y1=y}}
+ if(x1<=x0||y1<=y0)return cb(img.src);const w=x1-x0+1,h=y1-y0+1,t=document.createElement('canvas');t.width=w;t.height=h;t.getContext('2d').drawImage(c,x0,y0,w,h,0,0,w,h);cb(t.toDataURL('image/png'))}catch(e){cb(img.src)}}
 function art(btn,name){try{if(!window.Android||!Android.icon)return;const r=Android.icon(name);if(!r)return;
- const img=new Image();img.src='data:image/png;base64,'+r.slice(2);
- img.onload=()=>{try{
-  const W=img.naturalWidth,H=img.naturalHeight,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(img,0,0);
-  const d=x.getImageData(0,0,W,H).data,mg=(i)=>d[i+3]<24||(d[i]>240&&d[i+1]>240&&d[i+2]>240);
-  let x0=W,x1=-1,y0=H,y1=-1;for(let y=0;y<H;y++)for(let q=0;q<W;q++)if(!mg((y*W+q)*4)){if(q<x0)x0=q;if(q>x1)x1=q;if(y<y0)y0=y;if(y>y1)y1=y}
-  let src=img,bg='#fff';
-  if(x1>x0&&y1>y0&&(x1-x0)<W*.98){const w=x1-x0+1,h=y1-y0+1,t=document.createElement('canvas');t.width=w;t.height=h;t.getContext('2d').drawImage(c,x0,y0,w,h,0,0,w,h);src=t;
-   const px=(yy)=>{const i=((y0+yy)*W+x0+(w>>1))*4;return `rgb(${d[i]},${d[i+1]},${d[i+2]})`};bg=`linear-gradient(${px(Math.min(4,h-1))},${px(Math.max(h-5,0))})`}
-  const out=new Image();out.src=src===img?img.src:src.toDataURL('image/png');
-  out.onload=()=>{btn.innerHTML='';btn.style.background=bg;out.style.objectFit='contain';btn.appendChild(out)}
- }catch(e){btn.innerHTML='';btn.style.background='#fff';btn.appendChild(img)}}}catch(e){}}
+ const ban=r.startsWith('B:'),img=new Image();img.src='data:image/png;base64,'+r.slice(2);if(!ban)img.className='ic';
+ img.onload=()=>{
+  if(name==='youtube'){btn.innerHTML='';btn.style.background=ban?'#fff':'transparent';img.style.objectFit=ban?'contain':'cover';btn.appendChild(img);return}
+  // BlueVod: cut off the white border and stretch the blue icon to fill the whole tile
+  trimmed(img,u=>{const o=new Image();o.onload=()=>{btn.innerHTML='';btn.style.background='transparent';o.style.objectFit='fill';btn.appendChild(o)};o.src=u})}}catch(e){}}
 art($('yt'),'youtube');art($('bv'),'bluevod');
 
 // ---- controller / remote focus ----
